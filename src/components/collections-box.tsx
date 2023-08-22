@@ -8,7 +8,7 @@ import { Collection } from '~/utils/types';
 import { useSession } from 'next-auth/react';
 
 
-export default function Collections({ setCollection }: { setCollection: Dispatch<SetStateAction<string>> }) {
+export default function Collections({ setCollection }: { setCollection: Dispatch<SetStateAction<string | undefined>> }) {
 
 
   const { data, isLoading } = api.example.getCollections.useQuery();
@@ -18,7 +18,7 @@ export default function Collections({ setCollection }: { setCollection: Dispatch
 
   let collections;
   if (sessionData) {
-    const { data: privateData, isLoading: privateLoadingData } = api.example.getUserCollection.useQuery(sessionData.user?.id);
+    const { data: privateData, isLoading: privateLoadingData } = api.example.getUserCollection.useQuery();
     collections = privateData?.collections.Ok;
 
   } else {
