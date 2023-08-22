@@ -1,0 +1,51 @@
+-- Create the Account table
+CREATE TABLE Account (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-a' || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6)))),
+  userId TEXT,
+  providerType TEXT,
+  providerId TEXT,
+  providerAccountId TEXT,
+  refreshToken TEXT,
+  accessToken TEXT,
+  accessTokenExpires TEXT,
+  createdAt TEXT DEFAULT (datetime('now')),
+  updatedAt TEXT,
+  FOREIGN KEY (userId) REFERENCES User(id),
+  UNIQUE (providerId, providerAccountId)
+);
+
+-- Create the Session table
+CREATE TABLE Session (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-a' || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6)))),
+  userId TEXT,
+  expires TEXT,
+  sessionToken TEXT UNIQUE,
+  accessToken TEXT UNIQUE,
+  createdAt TEXT DEFAULT (datetime('now')),
+  updatedAt TEXT,
+  FOREIGN KEY (userId) REFERENCES User(id)
+);
+
+-- Create the User table
+CREATE TABLE User (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-a' || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6)))),
+  name TEXT,
+  email TEXT UNIQUE,
+  emailVerified TEXT,
+  image TEXT,
+  createdAt TEXT DEFAULT (datetime('now')),
+  updatedAt TEXT,
+  FOREIGN KEY (id) REFERENCES Account(userId)
+);
+
+-- Create the VerificationRequest table
+CREATE TABLE VerificationRequest (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-a' || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6)))),
+  identifier TEXT,
+  token TEXT UNIQUE,
+  expires TEXT,
+  createdAt TEXT DEFAULT (datetime('now')),
+  updatedAt TEXT,
+  UNIQUE (identifier, token)
+);
+
