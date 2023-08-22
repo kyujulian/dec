@@ -1,5 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react'
-import type { Content, JSONContent, HTMLContent } from '@tiptap/core';
+import type { JSONContent, HTMLContent } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit'
 import Image from 'next/image'
 
@@ -7,13 +7,13 @@ import { useEffect } from 'react';
 const Tiptap = ({ content, editable, className }:
   { content?: string, editable?: boolean, className?: string }) => {
 
-  let parsedContent;
+  let parsedContent: JSONContent | HTMLContent = "";
   try {
     if (content)
       parsedContent = JSON.parse(content) as JSONContent;
   }
   catch (e) {
-    console.log("Error parsing content");
+    console.error("Error parsing content");
     parsedContent = "Error parsing content" as HTMLContent;
   }
   const editor = useEditor({

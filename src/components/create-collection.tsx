@@ -1,13 +1,16 @@
 import { api } from '~/utils/api';
 import { useState } from 'react';
+import { Switcher } from "~/components/utils/switcher";
 
 
 interface FormValues {
   name: string;
   imageUrl: string;
 }
-export default function CreateCollection({ isPublic }: { isPublic: boolean }) {
+export default function CreateCollection() {
 
+
+  const [publicCollection, setPublicCollection] = useState(true);
 
   const [formValues, setFormValues] = useState<FormValues>({
     name: "wha",
@@ -22,11 +25,13 @@ export default function CreateCollection({ isPublic }: { isPublic: boolean }) {
     mutate({
       name: formValues.name,
       image: formValues.imageUrl,
-      isPublic: isPublic
+      isPublic: publicCollection
     })
   }
   return (
     <div>
+      <Switcher enabled={publicCollection} setEnabled={setPublicCollection} />
+      <h1> Public? </h1>
       <form className="flex flex-col w-full gap-4" onSubmit={handleSubmit}>
         <label htmlFor="name">Name</label>
         <input

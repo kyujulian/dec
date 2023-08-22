@@ -103,7 +103,6 @@ export async function getCardsCollection(collectionId: string): Promise<Option<F
 export async function getPublicCollections(): Promise<Option<Collection[], Error>> {
   try {
     const user = await drizzleAdapter.getUserByAccount({ providerAccountId: '127438172', provider: 'github' });
-    console.log(user.user);
     const result = await db.select().from(collections).where(eq(collections.public, true)).run();
     return { Ok: result.rows.map((collection) => rowAsCollection(collection)) }
   } catch (error) {
