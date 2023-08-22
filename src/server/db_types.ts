@@ -1,5 +1,6 @@
 interface Account {
-  id: string; userId: string;
+  id: string;
+  userId: string;
   providerType: string;
   providerId: string;
   providerAccountId: string;

@@ -5,6 +5,7 @@ import {
   primaryKey,
 } from "drizzle-orm/sqlite-core";
 import type { AdapterAccount } from "@auth/core/adapters";
+import { relations } from "drizzle-orm";
 
 export const users = sqliteTable("user", {
   id: text("id").notNull().primaryKey(),
@@ -73,6 +74,13 @@ export const collections = sqliteTable('Collections', {
   image: text('image'),
   public: integer('public', { mode: 'boolean' }).default(false).notNull(),
 });
+
+export const usersRelations = relations(users, ({ many }) => ({
+  usersToCollections: many(collectionOwners)
+}))
+export const collectionsRelations = relations(collections, ({ many }) => ({
+  collectionsToUsers: many(collectionOwners)
+}))
 
 
 export const collectionOwners = sqliteTable('CollectionOwners', {

@@ -1,14 +1,24 @@
 import { z } from "zod";
-import { createClient } from '@libsql/client';
-import { addFlashCard, addCollection, getFlashCards, getCardsCollection, getCollections, getPublicCollections, getUserCollections, createCollectionOwner } from '~/server/db';
-import type { Collection, FlashCard, Option } from '~/utils/types';
+import { createClient } from "@libsql/client";
+import {
+  addFlashCard,
+  addCollection,
+  getFlashCards,
+  getCardsCollection,
+  getPublicCollections,
+  getUserCollections,
+  createCollectionOwner,
+  getUserByUsername,
+  getUserPublicCollections,
+} from "~/server/db";
+import type { Collection, CollectionOwner, FlashCard, Option } from "~/utils/types";
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
 import { getCardsCollectionQuery } from "~/server/queries";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 export const exampleRouter = createTRPCRouter({
   hello: publicProcedure
@@ -19,65 +29,92 @@ export const exampleRouter = createTRPCRouter({
       };
     }),
 
-  turso: publicProcedure
-    .query(async () => {
-      const cards = await getFlashCards();
+  turso: publicProcedure.query(async () => {
+    const cards = await getFlashCards();
 
-      return {
-        cards: cards as Option<FlashCard[], Error>,
-      };
-    }),
+    return {
+      cards: cards as Option<FlashCard[], Error>,
+    };
+  }),
 
   addCardProcedure: protectedProcedure
-    .input(z.object({
-      collectionId: z.string(),
-      front: z.string(),
-      back: z.string()
-    }))
+    .input(
+      z.object({
+        collectionId: z.string(),
+        front: z.string(),
+        back: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const card: FlashCard = {
         id: uuidv4(),
         collectionId: input.collectionId,
         front: input.front,
-        back: input.back
-      }
+        back: input.back,
+      };
       const result = await addFlashCard(card);
     }),
 
+  getUserByUsername: publicProcedure
+    .input(z.object({ name: z.string() }))
+    .query(async ({ input }) => {
+      const result = await getUserByUsername(input.name);
+      return {
+        user: result as Option<User, Error>,
+      };
+    }),
+  getUserPublicCollections: publicProcedure
+    .input(z.object({ name: z.string() }))
+    .query(async ({ input }) => {
+      const result = await getUserPublicCollections(input.name);
+      if (result.Ok) {
+        return {
+          collections: result.Ok.map((result) => result.Collections)
+        };
+      }
+      return {
+        collections: []
+      }
+    }),
+
   addCollectionProcedure: protectedProcedure
-    .input(z.object({
-      name: z.string(),
-      image: z.string().url("image must be an url"),
-      isPublic: z.boolean()
-    }))
+    .input(
+      z.object({
+        name: z.string(),
+        image: z.string().url("image must be an url"),
+        isPublic: z.boolean(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      const id = uuidv4()
+      const id = uuidv4();
       const collection: Collection = {
         id: id,
         name: input.name,
         image: input.image,
         isPublic: input.isPublic,
-      }
+      };
       const result = await addCollection(collection);
-      const collectionOwnerCreated = await createCollectionOwner({ id: uuidv4(), collectionId: id, userId: ctx.session.user.id });
+
+      const collectionOwnerCreated = await createCollectionOwner({
+        id: uuidv4(),
+        collectionId: id,
+        userId: ctx.session.user.id,
+      });
     }),
 
+  getCollections: publicProcedure.query(async () => {
+    const collections = await getPublicCollections();
+    return {
+      collections: collections as Option<Collection[], Error>,
+    };
+  }),
 
-  getCollections: publicProcedure
-    .query(async () => {
-      const collections = await getPublicCollections();
-      return {
-        collections: collections as Option<Collection[], Error>
-      }
-    }),
-
-  getUserCollection: protectedProcedure
-    .query(async ({ ctx }) => {
-      const collections = await getUserCollections(ctx.session.user.id);
-      return {
-        collections: collections as Option<Collection[], Error>
-      }
-    }),
+  getUserCollection: protectedProcedure.query(async ({ ctx }) => {
+    const collections = await getUserCollections(ctx.session.user.id);
+    return {
+      collections: collections as Option<Collection[], Error>,
+    };
+  }),
 
   cardByCollection: publicProcedure
     .input(z.object({ id: z.string() }))
@@ -95,7 +132,7 @@ export const exampleRouter = createTRPCRouter({
   //
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";
+
   }),
 });
-
 

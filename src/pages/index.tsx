@@ -2,10 +2,10 @@ import Head from "next/head";
 import { api } from "~/utils/api";
 import type { Collection } from "~/utils/types";
 
-import { HomeContent } from "~/components/home"
-import { Nav } from "~/components/nav"
+import { HomeContent } from "~/components/home";
+import { Nav } from "~/components/nav";
 
-//components 
+//components
 
 export default function Home() {
   const { isLoading, data } = api.example.getCollections.useQuery();
@@ -18,9 +18,8 @@ export default function Home() {
     }
   }
 
-
-  if (isLoading || (!data)) {
-    return <div> Loading... </div>
+  if (isLoading || !data) {
+    return <div> Loading... </div>;
   }
 
   return (
@@ -35,6 +34,3 @@ export default function Home() {
     </>
   );
 }
-
-
-
