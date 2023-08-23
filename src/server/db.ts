@@ -1,15 +1,19 @@
-import { createClient } from "@libsql/client";
-import type { Row, ResultSet, InArgs } from "@libsql/client";
-import type { LibsqlError } from "@libsql/client";
-import type { FlashCard, Collection } from "~/utils/types";
-import { drizzle } from "drizzle-orm/libsql";
-import { flashCards, collections, collectionOwners, users } from "drizzle/schema";
-import { env } from "src/env.mjs";
-import * as schema from "drizzle/schema";
+import { createClient } from '@libsql/client';
+import type { Row, ResultSet, InArgs } from '@libsql/client';
+import type { LibsqlError } from '@libsql/client';
+import type { FlashCard, Collection } from '~/utils/types';
+import { drizzle } from 'drizzle-orm/libsql';
+import {
+  flashCards,
+  collections,
+  collectionOwners,
+  users,
+} from 'drizzle/schema';
+import { env } from 'src/env.mjs';
+import * as schema from 'drizzle/schema';
 
-
-import { getCardsCollectionQuery, getTablesQuery } from "./queries";
-import { eq, and } from "drizzle-orm";
+import { getCardsCollectionQuery, getTablesQuery } from './queries';
+import { eq, and } from 'drizzle-orm';
 
 type Option<T, K> = {
   Ok?: T;
@@ -22,7 +26,6 @@ const client = createClient({
 });
 
 export const db = drizzle(client, { schema });
-
 
 export const getFlashCards = async (): Promise<Option<FlashCard[], Error>> => {
   try {
@@ -178,7 +181,11 @@ function rowAsCollection(row: Row): Collection {
 
 export async function getUserByUsername(username: string) {
   try {
-    const result = await db.select().from(users).where(eq(users.name, username)).get();
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.name, username))
+      .get();
     // .findFirst()
     // .where(eq(users.name, username)) //TODO FIX: should be users.username
     // .get();
@@ -186,47 +193,51 @@ export async function getUserByUsername(username: string) {
     return { Ok: result };
   } catch (error) {
     console.error(error);
-    return { Err: error }
+    return { Err: error };
   }
 }
 
 export async function getUserCollectionsByUsername(username: string) {
   //TODO is this secure?
   try {
-
-    const many = await db.select().from(collections)
-      .innerJoin(collectionOwners, eq(collections.id, collectionOwners.collectionId))
+    const many = await db
+      .select()
+      .from(collections)
+      .innerJoin(
+        collectionOwners,
+        eq(collections.id, collectionOwners.collectionId)
+      )
       .innerJoin(users, eq(collectionOwners.userId, users.id))
       .where(eq(users.name, username))
-      .all()
-
+      .all();
 
     return { Ok: many };
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
-    return { Err: error }
+    return { Err: error };
   }
 }
 export async function getUserPublicCollections(username: string) {
   try {
     // const result = await db.select().from(users).leftJoin(collectionOwners, eq(users.id, collectionOwners.userId)).leftJoin(collections, eq(collectionOwners.collectionId, collections.id)).where(and(eq(users.name, username), eq(collections.public, true))).get()
 
-    const many = await db.select().from(collections)
-      .innerJoin(collectionOwners, eq(collections.id, collectionOwners.collectionId))
+    const many = await db
+      .select()
+      .from(collections)
+      .innerJoin(
+        collectionOwners,
+        eq(collections.id, collectionOwners.collectionId)
+      )
       .innerJoin(users, eq(collectionOwners.userId, users.id))
       .where(and(eq(users.name, username), eq(collections.public, true)))
-      .all()
-
+      .all();
 
     return { Ok: many };
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
-    return { Err: error }
+    return { Err: error };
   }
 }
-
 
 function rowAsCard(row: Row): FlashCard {
   // This is inconsistent

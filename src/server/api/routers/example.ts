@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { createClient } from "@libsql/client";
+import { z } from 'zod';
+import { createClient } from '@libsql/client';
 import {
   addFlashCard,
   addCollection,
@@ -10,15 +10,20 @@ import {
   createCollectionOwner,
   getUserByUsername,
   getUserPublicCollections,
-} from "~/server/db";
-import type { Collection, CollectionOwner, FlashCard, Option } from "~/utils/types";
+} from '~/server/db';
+import type {
+  Collection,
+  CollectionOwner,
+  FlashCard,
+  Option,
+} from '~/utils/types';
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
-} from "~/server/api/trpc";
-import { getCardsCollectionQuery } from "~/server/queries";
-import { v4 as uuidv4 } from "uuid";
+} from '~/server/api/trpc';
+import { getCardsCollectionQuery } from '~/server/queries';
+import { v4 as uuidv4 } from 'uuid';
 
 export const exampleRouter = createTRPCRouter({
   hello: publicProcedure
@@ -69,19 +74,19 @@ export const exampleRouter = createTRPCRouter({
       const result = await getUserPublicCollections(input.name);
       if (result.Ok) {
         return {
-          collections: result.Ok.map((result) => result.Collections)
+          collections: result.Ok.map((result) => result.Collections),
         };
       }
       return {
-        collections: []
-      }
+        collections: [],
+      };
     }),
 
   addCollectionProcedure: protectedProcedure
     .input(
       z.object({
         name: z.string(),
-        image: z.string().url("image must be an url"),
+        image: z.string().url('image must be an url'),
         isPublic: z.boolean(),
       })
     )
@@ -131,8 +136,6 @@ export const exampleRouter = createTRPCRouter({
   // }),
   //
   getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
-
+    return 'you can now see this secret message!';
   }),
 });
-

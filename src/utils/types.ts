@@ -7,7 +7,8 @@ export type CollectionOwner = {
   id: string;
   collectionId: string;
   userId: string;
-}
+};
+//TODO change name to ispublic in database
 export type Collection = {
   id: string;
   name: string;

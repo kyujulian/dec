@@ -1,7 +1,7 @@
 /** @type {import("prettier").Config} */
 const config = {
-  plugins: [require.resolve("prettier-plugin-tailwindcss")],
-  semicolon: true,
+  plugins: ["prettier-plugin-tailwindcss"],
+  semicolons: true,
   singleQuote: true,
   bracketSameLine: true,
   printWidth: 80,

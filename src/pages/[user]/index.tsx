@@ -1,39 +1,63 @@
-import { useRouter } from "next/router";
-import { api } from "~/utils/api";
+import { useRouter } from 'next/router';
+import { CollectionItem, CollectionsView } from '~/components/collections-box';
+import CreateCollection from '~/components/create-collection';
+import { Nav } from '~/components/nav';
+import { api } from '~/utils/api';
+import { useEffect, useState } from 'react';
+import { Collection } from '~/utils/types';
 
 export default function Page() {
   const router = useRouter();
 
-  const result = api.example.getUserByUsername.useQuery({ name: router.asPath.replace("/", "") });
-  const userCollection = api.example.getUserPublicCollections.useQuery({ name: router.asPath.replace("/", "") });
+  const result = api.example.getUserByUsername.useQuery({
+    name: router.asPath.replace('/', ''),
+  });
+  const userCollection = api.example.getUserPublicCollections.useQuery({
+    name: router.asPath.replace('/', ''),
+  });
+
+  const user = result.data?.user.Ok;
+
+  if (!userCollection.data?.collections) {
+    return (
+      <div>
+        Not okay.. collections, queried for {router.asPath.replace('/', '')}
+      </div>
+    );
+  }
 
   if (!result.data?.user.Ok) {
     console.log(result.data);
-
-    return <div>NotFound, queried for {router.asPath.replace("/", "")}</div>;
+    return <div>NotFound, queried for {router.asPath.replace('/', '')}</div>;
   }
-  const user = result.data.user.Ok;
 
-
-  if (!userCollection.data?.collections) {
-    console.log(userCollection.data);
-    return <div>Not okay.. collections, queried for {router.asPath.replace("/", "")}</div>;
-  }
   const collections = userCollection.data.collections;
 
-  console.log(collections);
   return (
-    <div>
+    <body>
+      <Nav />
       <h1>Post: {router.asPath}</h1>
       <h1> User: {user.name}</h1>
-      <ul >
-        {collections.map((collection, index) => (
-          <li key={index} >
-            {collection.name}
-          </li>
-        ))}
-      </ul>
-      <h2> {collections[0]?.name}</h2>
-    </div>
+
+      {collections && <CollectionHandler m_collections={collections} />}
+    </body>
+  );
+}
+
+function CollectionHandler({ m_collections }: { m_collections: Collection[] }) {
+  //TODO fix this name man
+  const [collections, setCollections] = useState<Collection[]>(m_collections);
+
+  return (
+    <>
+      <CreateCollection
+        collections={collections}
+        setCollections={setCollections}
+      />
+      <CollectionsView
+        collections={collections}
+        setCollections={setCollections}
+      />
+    </>
   );
 }

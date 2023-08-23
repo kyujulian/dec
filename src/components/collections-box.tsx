@@ -1,14 +1,14 @@
-import { Dispatch, Fragment, SetStateAction, useState } from "react";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { api } from "~/utils/api";
-import Image from "next/image";
+import { Dispatch, Fragment, SetStateAction, useState } from 'react';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
+import { api } from '~/utils/api';
+import Image from 'next/image';
 
-import { clsx } from "clsx";
+import { clsx } from 'clsx';
 // import { Collection } from '~/utils/types';
-import { useSession } from "next-auth/react";
+import { useSession } from 'next-auth/react';
 
-import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { Collection } from "~/utils/types";
+import { useAutoAnimate } from '@formkit/auto-animate/react';
+import { Collection } from '~/utils/types';
 
 export default function Collections({
   setCollection,
@@ -29,7 +29,7 @@ export default function Collections({
   }
   const [selected, setSelected] = useState<number>(0);
 
-  console.log("Collections from collection", data);
+  console.log('Collections from collection', data);
 
   if (isLoading) {
     return <div> Loading... </div>;
@@ -55,27 +55,27 @@ export default function Collections({
 
   return (
     <div className="w-full">
-      <Example collections={collections} setCollection={setCollection} />
+      <CollectionsView
+        collections={collections}
+        setCollections={setCollection}
+      />
     </div>
   );
 }
 
-function Example({
+export function CollectionsView({
   collections,
   setCollection,
 }: {
   collections: Collection[];
-  setCollection: Dispatch<SetStateAction<string | undefined>>;
+  setCollections: any; //TODO fix this type
 }) {
   // const { data, isLoading } = api.example.getCollections.useQuery();
-
-  console.log("Collections from example", collections);
   const [selected, setSelected] = useState(collections[0]);
   // const [selected, setSelected] = useState<number>(0);
   const [items, setItems] = useState(collections);
-  const [parent, enableAnimations] =
-    useAutoAnimate();
-    // const add = (collection) => setItems([...items, collection])
+  const [parent, enableAnimations] = useAutoAnimate();
+  // const add = (collection) => setItems([...items, collection])
 
   const selectCollection = (selected: Collection) => {
     setCollection(selected.id);
@@ -83,28 +83,40 @@ function Example({
   };
 
   return (
-    <div className="h-[80vh] w-full bg-blue-400">
+    <div className="w-full">
       <ul
         ref={parent}
-        className="grid h-full w-full grid-cols-4 grid-rows-3 gap-4"
-      >
+        className="grid h-full w-full grid-flow-row grid-cols-1  gap-10 p-10 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
         {collections.map((collection: Collection, index) => (
           <li
             className=" rounded-md border-[1px] border-neutral-400 bg-neutral-100 shadow-md hover:cursor-pointer dark:border-neutral-500 dark:bg-neutral-700 "
-            key={index}
-          >
-            <div className="relative h-[200px] w-full">
-              <Image
-                src={collection.image}
-                alt={collection.name}
-                fill
-                className="w-full  rounded-t-md object-cover"
-              />
-            </div>
-            <h3 className="p-4"> {collection.name} </h3>
+            key={index}>
+            <CollectionItem collection={collection} />
           </li>
         ))}
       </ul>
     </div>
   );
 }
+
+export const CollectionItem = ({
+  collection,
+  className,
+}: {
+  collection: Collection;
+  className?: string;
+}) => {
+  return (
+    <>
+      <div className={clsx('relative h-[200px]', className)}>
+        <Image
+          src={collection.image}
+          alt={collection.name}
+          fill
+          className="w-full rounded-t-md object-cover"
+        />
+      </div>
+      <h3 className="p-4"> {collection.name} </h3>
+    </>
+  );
+};
