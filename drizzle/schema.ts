@@ -88,7 +88,13 @@ export const collectionOwners = sqliteTable('CollectionOwners', {
   userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
 });
 
-// export const tags = sqliteTable('Tags' , {
-//   id: text('id').notNull().primaryKey(),
-//   name: text('name')
-// })
+export const usersToCollections = relations(collectionOwners, ({ one }) => ({
+  collection: one(collections, {
+    fields: [collectionOwners.collectionId],
+    references: [collections.id],
+  }),
+  user: one(users, {
+    fields: [collectionOwners.userId],
+    references: [users.id],
+  }),
+}));
