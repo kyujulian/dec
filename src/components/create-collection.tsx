@@ -10,8 +10,10 @@ import { PlusSmallIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { useState, useRef, useEffect } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import autoAnimate from '@formkit/auto-animate';
-import { Collection } from '~/utils/types';
-import { PlusIcon } from '~/components/collections-box';
+import type { Collection } from '~/utils/types';
+
+import { z } from 'zod';
+// import { PlusIcon } from '~/components/collections-box';
 
 export default function CreateCollection({
   setCollections,
@@ -99,37 +101,61 @@ export function CollectionForm({
   closeModal,
 }: {
   setCollections: Dispatch<SetStateAction<Collection[]>>;
-  closeModal?: () => void;
+  closeModal: () => void;
 }) {
   const [publicCollection, setPublicCollection] = useState(true);
 
   const [formValues, setFormValues] = useState<FormValues>({
-    name: 'wha',
-    imageUrl: 'what2',
+    name: '',
+    imageUrl: '',
   });
 
   const { mutate, isLoading } = api.example.addCollectionProcedure.useMutation(
     {}
   );
 
+  //check if a string is a valid url -- GPT-3.5
+  function isUrl(str: string): boolean {
+    const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+    return urlPattern.test(str);
+  }
+
+  const [errors, setErrors] = useState({
+    name: '',
+    imageUrl: '',
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('CollectionForm', formValues);
-    mutate({
-      name: formValues.name,
-      image: formValues.imageUrl,
-      isPublic: publicCollection,
-    });
-    closeModal();
-    setCollections((collections) => [
-      ...collections,
-      {
-        id: 'what',
-        image: formValues.imageUrl,
+    if (!isUrl(formValues.imageUrl)) {
+      setErrors((errors) => ({ ...errors, imageUrl: 'Invalid url' }));
+    } else {
+      setErrors((errors) => ({ ...errors, imageUrl: '' }));
+    }
+    if (!formValues.name) {
+      setErrors((errors) => ({ ...errors, name: 'Invalid name' }));
+    } else {
+      setErrors((errors) => ({ ...errors, name: '' }));
+    }
+
+    if (errors.name && errors.imageUrl) {
+      mutate({
         name: formValues.name,
+        image: formValues.imageUrl,
         isPublic: publicCollection,
-      },
-    ]);
+      });
+      setCollections((collections) => [
+        ...collections,
+        {
+          id: 'dummy',
+          image: formValues.imageUrl,
+          name: formValues.name,
+          isPublic: publicCollection,
+        },
+      ]);
+      closeModal();
+    }
   };
   return (
     <div className="">
@@ -142,6 +168,7 @@ export function CollectionForm({
       </div>
       <form className="flex w-full flex-col gap-4" onSubmit={handleSubmit}>
         <label htmlFor="name">Name</label>
+        {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
         <input
           onChange={(e) =>
             setFormValues({ ...formValues, name: e.target.value })
@@ -152,6 +179,9 @@ export function CollectionForm({
           placeholder="Collection name"
         />
         <label htmlFor="ImageUrl">Image url</label>
+        {errors.imageUrl && (
+          <p className="text-xs text-red-500">{errors.imageUrl}</p>
+        )}
         <input
           className="rounded-sm bg-neutral-100 p-2 shadow-inner"
           onChange={(e) =>
