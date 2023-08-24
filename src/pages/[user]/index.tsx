@@ -38,7 +38,6 @@ export default function Page() {
       <Nav />
       <h1>Post: {router.asPath}</h1>
       <h1> User: {user.name}</h1>
-
       {collections && <CollectionHandler m_collections={collections} />}
     </body>
   );
@@ -50,10 +49,6 @@ function CollectionHandler({ m_collections }: { m_collections: Collection[] }) {
 
   return (
     <>
-      <CreateCollection
-        collections={collections}
-        setCollections={setCollections}
-      />
       <CollectionsView
         collections={collections}
         setCollections={setCollections}

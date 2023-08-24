@@ -3,20 +3,23 @@ import { api } from '~/utils/api';
 import { Switcher } from '~/components/utils/switcher';
 import clsx from 'clsx';
 // import autoAnimate fcom '@formkit/auto-animate';
+import { Dialog, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
 
-import { XMarkIcon } from '@heroicons/react/20/solid';
-import { useState, useRef, useEffect, Dispatch, SetStateAction } from 'react';
+import { PlusSmallIcon, XMarkIcon } from '@heroicons/react/20/solid';
+import { useState, useRef, useEffect } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import autoAnimate from '@formkit/auto-animate';
 import { Collection } from '~/utils/types';
+import { PlusIcon } from '~/components/collections-box';
 
 export default function CreateCollection({
-  collections,
   setCollections,
 }: {
   collections: Collection[];
   setCollections: Dispatch<SetStateAction<Collection[]>>;
 }) {
-  const [show, setShow] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const parent = useRef(null);
 
@@ -24,35 +27,65 @@ export default function CreateCollection({
     parent.current && autoAnimate(parent.current);
   }, [parent]);
 
-  const reveal = () => setShow(!show);
+  const openModal = () => setIsOpen(true);
+  const closeModal = () => setIsOpen(false);
 
+  // <MyModal />
   return (
-    <div
-      ref={parent}
-      className={clsx(
-        'absolute  right-10 top-10 z-10 w-[300px] rounded-md border-[1px] border-neutral-300 bg-white p-3 shadow-md  hover:cursor-pointer ',
-        { ' p-8 hover:cursor-auto': show }
-      )}
-      onClick={() => {
-        if (!show) {
-          reveal();
-        }
-      }}>
-      <strong
-        className="dropdown-label  mx-auto w-fit transition-all duration-200 hover:cursor-pointer"
-        onClick={reveal}>
-        New Collection
-      </strong>
-      {show && (
-        <XMarkIcon
-          role="button"
-          onClick={reveal}
-          className={clsx(
-            ' absolute right-5 top-4 h-5 w-5 text-neutral-400 transition-all duration-200 hover:cursor-pointer'
-          )}
+    <div className=" h-full w-full  ">
+      <button
+        type="button"
+        onClick={openModal}
+        className="flex h-full w-full items-center justify-center rounded-md bg-black bg-opacity-10 px-4 py-2 text-sm font-medium text-white hover:bg-opacity-20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
+        <PlusSmallIcon
+          className=" h-full max-h-[300px] w-[80%]  bg-none"
+          aria-hidden="true"
         />
-      )}
-      {show && <CollectionForm setCollections={setCollections} />}
+      </button>
+
+      <Transition appear show={isOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0  overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95">
+                <Dialog.Panel className="h-fit w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <div className="flex justify-end">
+                    <XMarkIcon
+                      role="button"
+                      onClick={closeModal}
+                      className={clsx(
+                        'h-5 w-5 text-neutral-400 transition-all duration-200 hover:cursor-pointer'
+                      )}
+                    />
+                  </div>
+                  <CollectionForm
+                    setCollections={setCollections}
+                    closeModal={closeModal}
+                  />
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 }
@@ -63,8 +96,10 @@ interface FormValues {
 }
 export function CollectionForm({
   setCollections,
+  closeModal,
 }: {
   setCollections: Dispatch<SetStateAction<Collection[]>>;
+  closeModal?: () => void;
 }) {
   const [publicCollection, setPublicCollection] = useState(true);
 
@@ -85,6 +120,7 @@ export function CollectionForm({
       image: formValues.imageUrl,
       isPublic: publicCollection,
     });
+    closeModal();
     setCollections((collections) => [
       ...collections,
       {

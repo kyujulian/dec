@@ -1,5 +1,6 @@
-import { Dispatch, Fragment, SetStateAction, useState } from 'react';
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
+import type { Dispatch, Fragment, SetStateAction } from 'react';
+import { useState } from 'react';
+// import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import { api } from '~/utils/api';
 import Image from 'next/image';
 
@@ -8,8 +9,10 @@ import { clsx } from 'clsx';
 import { useSession } from 'next-auth/react';
 
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { Collection } from '~/utils/types';
+import type { Collection } from '~/utils/types';
+import CreateCollection from './create-collection';
 
+// import { PlusIcon } from '@heroicons/react/20/solid';
 export default function Collections({
   setCollection,
 }: {
@@ -65,28 +68,25 @@ export default function Collections({
 
 export function CollectionsView({
   collections,
-  setCollection,
+  setCollections,
 }: {
   collections: Collection[];
   setCollections: any; //TODO fix this type
 }) {
-  // const { data, isLoading } = api.example.getCollections.useQuery();
-  const [selected, setSelected] = useState(collections[0]);
-  // const [selected, setSelected] = useState<number>(0);
-  const [items, setItems] = useState(collections);
   const [parent, enableAnimations] = useAutoAnimate();
-  // const add = (collection) => setItems([...items, collection])
-
-  const selectCollection = (selected: Collection) => {
-    setCollection(selected.id);
-    setSelected(selected);
-  };
 
   return (
-    <div className="w-full">
+    <div className="h-full w-full">
       <ul
         ref={parent}
         className="grid h-full w-full grid-flow-row grid-cols-1  gap-10 p-10 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+        <li className=" rounded-md border-[1px]   shadow-md hover:cursor-pointer dark:border-neutral-500 dark:bg-neutral-700">
+          <CreateCollection
+            collections={collections}
+            setCollections={setCollections}
+          />
+          {/* <CollectionItem create /> */}
+        </li>
         {collections.map((collection: Collection, index) => (
           <li
             className=" rounded-md border-[1px] border-neutral-400 bg-neutral-100 shadow-md hover:cursor-pointer dark:border-neutral-500 dark:bg-neutral-700 "
@@ -102,21 +102,68 @@ export function CollectionsView({
 export const CollectionItem = ({
   collection,
   className,
+  create,
 }: {
   collection: Collection;
   className?: string;
+  create?: boolean;
 }) => {
   return (
     <>
-      <div className={clsx('relative h-[200px]', className)}>
-        <Image
-          src={collection.image}
-          alt={collection.name}
-          fill
-          className="w-full rounded-t-md object-cover"
-        />
-      </div>
-      <h3 className="p-4"> {collection.name} </h3>
+      {create ? (
+        <div
+          className={clsx(
+            'relative flex  items-center justify-center',
+            className
+          )}>
+          <PlusIcon onClick={() => {}} className="fill-neutral-300 px-10" />
+        </div>
+      ) : (
+        <>
+          <div className={clsx('relative h-[200px]', className)}>
+            <Image
+              src={collection.image}
+              alt={collection.name}
+              fill
+              className="w-full rounded-t-md object-cover"
+            />
+          </div>
+          <h3 className="p-4"> {collection.name} </h3>
+        </>
+      )}
     </>
   );
 };
+
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+
+export const PlusIcon = ({
+  className,
+  onClick,
+}: {
+  className?: string;
+  onClick?: () => void;
+}) => (
+  <svg
+    className={className}
+    onClick={onClick}
+    viewBox="0 -0.5 9 9"
+    version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlnsXlink="http://www.w3.org/1999/xlink">
+    <title>plus_mini [#1523]</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" strokeWidth="1" fillRule="evenodd">
+      <g
+        id="Dribbble-Light-Preview"
+        transform="translate(-345.000000, -206.000000)">
+        <g id="icons" transform="translate(56.000000, 160.000000)">
+          <polygon
+            id="plus_mini-[#1523]"
+            points="298 49 298 51 294.625 51 294.625 54 292.375 54 292.375 51 289 51 289 49 292.375 49 292.375 46 294.625 46 294.625 49"
+          />
+        </g>
+      </g>
+    </g>
+  </svg>
+);
