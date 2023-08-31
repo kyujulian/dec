@@ -68,33 +68,35 @@ export const flashCards = sqliteTable('FlashCards', {
 
 export const collections = sqliteTable('Collections', {
   id: text('id').notNull().primaryKey(),
+  handle: text('handle'),
   name: text('name'),
   image: text('image'),
-  public: integer('public', { mode: 'boolean' }).default(false).notNull(), //TODO change name to ispublic in database
+  ownerId: text('owner_id').references(() => users.id, { onDelete: 'cascade' }),
+  ispublic: integer('public', { mode: 'boolean' }).default(false).notNull(), //TODO change name to ispublic in database
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
-  usersToCollections: many(collectionOwners),
-}));
-export const collectionsRelations = relations(collections, ({ many }) => ({
-  collectionsToUsers: many(collectionOwners),
-}));
+// export const usersRelations = relations(users, ({ many }) => ({
+//   usersToCollections: many(collectionOwners),
+// }));
+// export const collectionsRelations = relations(collections, ({ many }) => ({
+//   collectionsToUsers: many(collectionOwners),
+// }));
 
-export const collectionOwners = sqliteTable('CollectionOwners', {
-  id: text('id').notNull().primaryKey(),
-  collectionId: text('collection_id').references(() => collections.id, {
-    onDelete: 'cascade',
-  }),
-  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
-});
+// export const collectionOwners = sqliteTable('CollectionOwners', {
+//   id: text('id').notNull().primaryKey(),
+//   collectionId: text('collection_id').references(() => collections.id, {
+//     onDelete: 'cascade',
+//   }),
+//   userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
+// });
 
-export const usersToCollections = relations(collectionOwners, ({ one }) => ({
-  collection: one(collections, {
-    fields: [collectionOwners.collectionId],
-    references: [collections.id],
-  }),
-  user: one(users, {
-    fields: [collectionOwners.userId],
-    references: [users.id],
-  }),
-}));
+// export const usersToCollections = relations(collectionOwners, ({ one }) => ({
+//   collection: one(collections, {
+//     fields: [collectionOwners.collectionId],
+//     references: [collections.id],
+//   }),
+//   user: one(users, {
+//     fields: [collectionOwners.userId],
+//     references: [users.id],
+//   }),
+// }));

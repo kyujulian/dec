@@ -32,9 +32,8 @@ export default function CreateCollection({
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
 
-  // <MyModal />
   return (
-    <div className=" h-full w-full  ">
+    <div className="h-full w-full">
       <button
         type="button"
         onClick={openModal}
@@ -139,7 +138,8 @@ export function CollectionForm({
       setErrors((errors) => ({ ...errors, name: '' }));
     }
 
-    if (errors.name && errors.imageUrl) {
+    const isValid = !errors.name && !errors.imageUrl;
+    if (isValid) {
       mutate({
         name: formValues.name,
         image: formValues.imageUrl,
@@ -150,6 +150,8 @@ export function CollectionForm({
         {
           id: 'dummy',
           image: formValues.imageUrl,
+          ownerId: 'dummy',
+          handle: 'dummy',
           name: formValues.name,
           isPublic: publicCollection,
         },
@@ -167,8 +169,8 @@ export function CollectionForm({
         </h1>
       </div>
       <form className="flex w-full flex-col gap-4" onSubmit={handleSubmit}>
-        <label htmlFor="name">Name</label>
-        {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+        <label htmlFor="name"> Name </label>
+        {errors.name && <p className="text-xs text-red-500"> {errors.name} </p>}
         <input
           onChange={(e) =>
             setFormValues({ ...formValues, name: e.target.value })
@@ -178,9 +180,9 @@ export function CollectionForm({
           type="text"
           placeholder="Collection name"
         />
-        <label htmlFor="ImageUrl">Image url</label>
+        <label htmlFor="ImageUrl"> Image url </label>
         {errors.imageUrl && (
-          <p className="text-xs text-red-500">{errors.imageUrl}</p>
+          <p className="text-xs text-red-500"> {errors.imageUrl} </p>
         )}
         <input
           className="rounded-sm bg-neutral-100 p-2 shadow-inner"

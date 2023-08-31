@@ -8,11 +8,19 @@ export type CollectionOwner = {
   collectionId: string;
   userId: string;
 };
-//TODO change name to ispublic in database
-export type Collection = {
-  id: string;
+
+export type CollectionInput = {
   name: string;
   image: string; // will be a blob in the future
+  isPublic: boolean;
+};
+
+export type Collection = {
+  id: string;
+  handle: string;
+  name: string;
+  image: string; // will be a blob in the future
+  ownerId: string;
   isPublic: boolean;
 };
 export type FlashCard = {
@@ -20,4 +28,11 @@ export type FlashCard = {
   collectionId: string;
   front: string;
   back: string;
+};
+
+//Display
+export type DisplayCollection = {
+  handle: string;
+  name: string;
+  image: string; // will be a blob in the future
 };

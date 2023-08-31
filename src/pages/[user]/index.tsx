@@ -1,13 +1,14 @@
 import { useRouter } from 'next/router';
-import { CollectionItem, CollectionsView } from '~/components/collections-box';
-import CreateCollection from '~/components/create-collection';
+import { CollectionsView } from '~/components/collections-box';
 import { Nav } from '~/components/nav';
 import { api } from '~/utils/api';
-import { useEffect, useState } from 'react';
-import { Collection } from '~/utils/types';
+import { useState } from 'react';
+import type { Collection } from '~/utils/types';
 
 export default function Page() {
   const router = useRouter();
+
+  const { data, isLoading } = api.example.getCollections.useQuery();
 
   const result = api.example.getUserByUsername.useQuery({
     name: router.asPath.replace('/', ''),
@@ -27,23 +28,32 @@ export default function Page() {
   }
 
   if (!result.data?.user.Ok) {
-    console.log(result.data);
     return <div>NotFound, queried for {router.asPath.replace('/', '')}</div>;
   }
 
-  const collections = userCollection.data.collections;
+  // const collections = userCollection.data.collections;
+  const useCollections = data?.collections.Ok;
 
   return (
-    <body>
+    <>
       <Nav />
-      <h1>Post: {router.asPath}</h1>
-      <h1> User: {user.name}</h1>
-      {collections && <CollectionHandler m_collections={collections} />}
-    </body>
+      {useCollections && (
+        <UserCollectionPage
+          m_collections={useCollections}
+          username={user?.name ? user.name : undefined}
+        />
+      )}
+    </>
   );
 }
 
-function CollectionHandler({ m_collections }: { m_collections: Collection[] }) {
+function UserCollectionPage({
+  m_collections,
+  username,
+}: {
+  m_collections: Collection[];
+  username: string | undefined;
+}) {
   //TODO fix this name man
   const [collections, setCollections] = useState<Collection[]>(m_collections);
 
@@ -52,6 +62,7 @@ function CollectionHandler({ m_collections }: { m_collections: Collection[] }) {
       <CollectionsView
         collections={collections}
         setCollections={setCollections}
+        username={username}
       />
     </>
   );

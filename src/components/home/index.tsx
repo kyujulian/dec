@@ -26,7 +26,7 @@ export function HomeContent({ deck }: { deck: Collection[] }) {
       <MyTabs>
         {collectionId && <DeckView collectionId={collectionId} />}
         {collectionId && <InsertCard currentCollection={collectionId} />}
-        <CreateCollection />
+        {/* <CreateCollection /> */}
       </MyTabs>
     </main>
   );

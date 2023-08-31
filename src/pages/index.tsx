@@ -1,9 +1,9 @@
-import Head from "next/head";
-import { api } from "~/utils/api";
-import type { Collection } from "~/utils/types";
+import Head from 'next/head';
+import { api } from '~/utils/api';
+import type { Collection } from '~/utils/types';
 
-import { HomeContent } from "~/components/home";
-import { Nav } from "~/components/nav";
+import { HomeContent } from '~/components/home';
+import { Nav } from '~/components/nav';
 
 //components
 

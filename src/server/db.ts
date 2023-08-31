@@ -3,12 +3,7 @@ import type { Row, ResultSet, InArgs } from '@libsql/client';
 import type { LibsqlError } from '@libsql/client';
 import type { FlashCard, Collection } from '~/utils/types';
 import { drizzle } from 'drizzle-orm/libsql';
-import {
-  flashCards,
-  collections,
-  collectionOwners,
-  users,
-} from 'drizzle/schema';
+import { flashCards, collections, users } from 'drizzle/schema';
 import { env } from 'src/env.mjs';
 import * as schema from 'drizzle/schema';
 
@@ -62,9 +57,11 @@ export const addCollection = async (collection: Collection) => {
       .insert(collections)
       .values({
         id: collection.id,
+        handle: collection.handle,
         name: collection.name,
         image: collection.image,
-        public: collection.isPublic,
+        ownerId: collection.ownerId,
+        ispublic: collection.isPublic,
       })
       .run();
     return { Ok: result };
@@ -116,7 +113,7 @@ export async function getPublicCollections(): Promise<
     const result = await db
       .select()
       .from(collections)
-      .where(eq(collections.public, true))
+      .where(eq(collections.ispublic, true))
       .run();
     return { Ok: result.rows.map((collection) => rowAsCollection(collection)) };
   } catch (error) {
@@ -173,8 +170,9 @@ export async function getUserCollections(
 function rowAsCollection(row: Row): Collection {
   return {
     id: row[0] as string,
-    name: row[1] as string,
-    image: row[2] as string,
+    handle: row[1] as string,
+    name: row[2] as string,
+    image: row[3] as string,
     isPublic: row[4] as unknown as boolean,
   };
 }
@@ -197,26 +195,26 @@ export async function getUserByUsername(username: string) {
   }
 }
 
-export async function getUserCollectionsByUsername(username: string) {
-  //TODO is this secure?
-  try {
-    const many = await db
-      .select()
-      .from(collections)
-      .innerJoin(
-        collectionOwners,
-        eq(collections.id, collectionOwners.collectionId)
-      )
-      .innerJoin(users, eq(collectionOwners.userId, users.id))
-      .where(eq(users.name, username))
-      .all();
-
-    return { Ok: many };
-  } catch (error) {
-    console.error(error);
-    return { Err: error };
-  }
-}
+// export async function getUserCollectionsByUsername(username: string) {
+//   //TODO is this secure?
+//   try {
+//     const many = await db
+//       .select()
+//       .from(collections)
+//       .innerJoin(
+//         collectionOwners,
+//         eq(collections.id, collectionOwners.collectionId)
+//       )
+//       .innerJoin(users, eq(collectionOwners.userId, users.id))
+//       .where(eq(users.name, username))
+//       .all();
+//
+//     return { Ok: many };
+//   } catch (error) {
+//     console.error(error);
+//     return { Err: error };
+//   }
+// }
 export async function getUserPublicCollections(username: string) {
   try {
     // const result = await db.select().from(users).leftJoin(collectionOwners, eq(users.id, collectionOwners.userId)).leftJoin(collections, eq(collectionOwners.collectionId, collections.id)).where(and(eq(users.name, username), eq(collections.public, true))).get()
@@ -224,15 +222,11 @@ export async function getUserPublicCollections(username: string) {
     const many = await db
       .select()
       .from(collections)
-      .innerJoin(
-        collectionOwners,
-        eq(collections.id, collectionOwners.collectionId)
-      )
-      .innerJoin(users, eq(collectionOwners.userId, users.id))
-      .where(and(eq(users.name, username), eq(collections.public, true)))
+      .innerJoin(users, eq(collections.ownerId, users.id))
+      .where(eq(collections.ispublic, true))
       .all();
 
-    return { Ok: many };
+    return { Ok: many.map((c) => c.Collections) };
   } catch (error) {
     console.error(error);
     return { Err: error };
@@ -282,4 +276,44 @@ export async function tursoFetch({
   } catch (error) {
     return { Err: error as LibsqlError };
   }
+}
+
+// export async function getCollectionsWithOwnerPublic() {
+//   try {
+//     const result = await db
+//       .select()
+//       .from(collections)
+//       .innerJoin(
+//         collectionOwners,
+//         eq(collections.id, collectionOwners.collectionId)
+//       )
+//       .innerJoin(users, eq(collectionOwners.userId, users.id))
+//       .where(eq(collections.ispublic, true))
+//       .all();
+//     return { Ok: result };
+//   } catch (error) {
+//     return { Err: error };
+//   }
+// }
+//
+// export async function getCollectionsWithOwner() {
+//   try {
+//     const result = await db
+//       .select()
+//       .from(collections)
+//       .innerJoin(
+//         collectionOwners,
+//         eq(collections.id, collectionOwners.collectionId)
+//       )
+//       .innerJoin(users, eq(collectionOwners.userId, users.id))
+//       .all();
+//     return { Ok: result };
+//   } catch (error) {
+//     return { Err: error };
+//   }
+// }
+
+export async function getCollectionHandles() {
+  const result = await db.select().from(collections).get();
+  return result;
 }

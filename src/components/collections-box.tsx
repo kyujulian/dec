@@ -1,37 +1,28 @@
-import type { Dispatch, Fragment, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { useState } from 'react';
-// import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import { api } from '~/utils/api';
 import Image from 'next/image';
 
 import { clsx } from 'clsx';
-// import { Collection } from '~/utils/types';
 import { useSession } from 'next-auth/react';
 
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import type { Collection } from '~/utils/types';
 import CreateCollection from './create-collection';
+import Link from 'next/link';
 
-// import { PlusIcon } from '@heroicons/react/20/solid';
 export default function Collections({
   setCollection,
 }: {
-  setCollection: Dispatch<SetStateAction<string | undefined>>;
+  setCollection: Dispatch<SetStateAction<Collection[]>>;
 }) {
   const { data, isLoading } = api.example.getCollections.useQuery();
 
   const { data: sessionData } = useSession();
 
-  let collections;
-  if (sessionData) {
-    const { data: privateData, isLoading: privateLoadingData } =
-      api.example.getUserCollection.useQuery();
-    collections = privateData?.collections.Ok;
-  } else {
-    collections = data?.collections.Ok;
-  }
-  const [selected, setSelected] = useState<number>(0);
+  const collections = data?.collections.Ok;
 
+  const [selected, setSelected] = useState<number>(0);
   console.log('Collections from collection', data);
 
   if (isLoading) {
@@ -44,13 +35,8 @@ export default function Collections({
   if (sessionData) {
   }
   if (!collections) {
-    return <div> Collections Ok doesni &apos t exist </div>;
+    return <div> Collections Ok doesn`&apos`t exist </div>;
   }
-
-  const selectCollection = (id: string, index: number) => {
-    setCollection(id);
-    setSelected(index);
-  };
 
   if (collections.length == 0) {
     return <div> Need to create collections bruv </div>;
@@ -61,6 +47,7 @@ export default function Collections({
       <CollectionsView
         collections={collections}
         setCollections={setCollection}
+        username={sessionData?.user.name ? sessionData.user.name : undefined}
       />
     </div>
   );
@@ -69,12 +56,15 @@ export default function Collections({
 export function CollectionsView({
   collections,
   setCollections,
+  username,
 }: {
   collections: Collection[];
-  setCollections: any; //TODO fix this type
+  setCollections: Dispatch<SetStateAction<Collection[]>>; //TODO fix this type
+  username?: string;
 }) {
   const [parent, enableAnimations] = useAutoAnimate();
 
+  console.log('CollectionsView', collections);
   return (
     <div className="h-full w-full">
       <ul
@@ -91,7 +81,9 @@ export function CollectionsView({
           <li
             className=" rounded-md border-[1px] border-neutral-400 bg-neutral-100 shadow-md hover:cursor-pointer dark:border-neutral-500 dark:bg-neutral-700 "
             key={index}>
-            <CollectionItem collection={collection} />
+            <Link href={`${username}/${collection.handle}`}>
+              <CollectionItem collection={collection} />
+            </Link>
           </li>
         ))}
       </ul>
@@ -116,7 +108,7 @@ export const CollectionItem = ({
             'relative flex  items-center justify-center',
             className
           )}>
-          <PlusIcon onClick={() => {}} className="fill-neutral-300 px-10" />
+          <PlusIcon className="fill-neutral-300 px-10" />
         </div>
       ) : (
         <>
@@ -134,8 +126,6 @@ export const CollectionItem = ({
     </>
   );
 };
-
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export const PlusIcon = ({
   className,

@@ -10,9 +10,11 @@ import {
   createCollectionOwner,
   getUserByUsername,
   getUserPublicCollections,
+  getCollectionHandles,
 } from '~/server/db';
 import type {
   Collection,
+  CollectionInput,
   CollectionOwner,
   FlashCard,
   Option,
@@ -72,13 +74,14 @@ export const exampleRouter = createTRPCRouter({
     .input(z.object({ name: z.string() }))
     .query(async ({ input }) => {
       const result = await getUserPublicCollections(input.name);
+
       if (result.Ok) {
         return {
-          collections: result.Ok.map((result) => result.Collections),
+          collections: result.Ok,
         };
       }
       return {
-        collections: [],
+        collections: [] as Collection[],
       };
     }),
 
@@ -94,21 +97,18 @@ export const exampleRouter = createTRPCRouter({
       const id = uuidv4();
       const collection: Collection = {
         id: id,
+        handle: input.name.replace(' ', '-').toLowerCase(),
         name: input.name,
+        ownerId: ctx.session.user.id,
         image: input.image,
         isPublic: input.isPublic,
       };
       const result = await addCollection(collection);
-
-      const collectionOwnerCreated = await createCollectionOwner({
-        id: uuidv4(),
-        collectionId: id,
-        userId: ctx.session.user.id,
-      });
     }),
 
   getCollections: publicProcedure.query(async () => {
     const collections = await getPublicCollections();
+
     return {
       collections: collections as Option<Collection[], Error>,
     };
@@ -131,10 +131,6 @@ export const exampleRouter = createTRPCRouter({
       };
     }),
 
-  // getAll: publicProcedure.query(({ ctx }) => {
-  //   return ctx.prisma.example.findMany();
-  // }),
-  //
   getSecretMessage: protectedProcedure.query(() => {
     return 'you can now see this secret message!';
   }),

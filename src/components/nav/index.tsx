@@ -13,7 +13,9 @@ export const Nav = () => {
       <ThemeSwitcher />
       <div>
         {' '}
-        <h1 className="font-bold"> Dec</h1>{' '}
+        <Link href="/">
+          <h1 className="font-bold"> Dec</h1>
+        </Link>{' '}
       </div>
       <div className="flex items-center gap-3">
         {sessionData ? (
